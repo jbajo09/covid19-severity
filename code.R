@@ -112,16 +112,16 @@ Annotation_gene_GSE152075_1 <- getGenesAnnotation(rownames(GSE152075_counts_1))
 Annotation_gene_GSE152075_1 <- Annotation_gene_GSE152075_1[order(Annotation_gene_GSE152075_1$ensembl_gene_id),]
 GSE152075_counts_1<- GSE152075_counts_1[order(rownames(GSE152075_counts_1)),]
 GSE152075_expressionMatrix <- calculateGeneExpressionValues(GSE152075_counts_1, Annotation_gene_GSE152075_1, genesNames = TRUE) #
-GSE152075_severity <- read.csv('D:/documentos/covid1/datos/GSE152075/2021-03-19_Rojas.csv')
+GSE152075_severity <- read.csv('2021-03-19_Rojas.csv')
 GSE152075_outliers <- RNAseqQA(GSE152075_expressionMatrix,toPNG = FALSE, toPDF = FALSE,toRemoval = TRUE) # 
 GSE152075_age <- GSE152075_age[-which(colnames(GSE152075_expressionMatrix)%in%GSE152075_outliers$outliers)]
 GSE152075_gender <- GSE152075_gender[-which(colnames(GSE152075_expressionMatrix)%in%GSE152075_outliers$outliers)]
 GSE152075_labels <- GSE152075_labels[-which(colnames(GSE152075_expressionMatrix)%in%GSE152075_outliers$outliers)] 
-GSE152075_severity <-  GSE152075_severity[-which(GSE152075_severity$ï..alt_name%in%GSE152075_outliers$outliers),]
+GSE152075_severity <-  GSE152075_severity[-which(GSE152075_severity$Ã¯..alt_name%in%GSE152075_outliers$outliers),]
 GSE152075_expressionMatrix <- GSE152075_outliers$matrix
 GSE152075_severity <- GSE152075_severity[which(GSE152075_severity$covid_status=='pos'),]
 GSE152075_severity <- GSE152075_severity[which(GSE152075_severity$admitted.to.hospital..not.just.ED..at.time.of.initial.test.=='yes'|GSE152075_severity$admitted.to.hospital..not.just.ED..at.time.of.initial.test.=='no'),]
-GSE152075_expressionMatrix_severity <- GSE152075_expressionMatrix[,which(colnames(GSE152075_expressionMatrix)%in%GSE152075_severity$ï..alt_name)]
+GSE152075_expressionMatrix_severity <- GSE152075_expressionMatrix[,which(colnames(GSE152075_expressionMatrix)%in%GSE152075_severity$Ã¯..alt_name)]
 GSE152075_expressionMatrix_severity <- cbind(GSE152075_expressionMatrix_severity,GSE152075_expressionMatrix[,which(GSE152075_labels=='Control')])
 GSE152075_labels_severity <- c(GSE152075_severity$admitted.to.hospital..not.just.ED..at.time.of.initial.test., rep('Control',52))
 for (i in 1:length(GSE152075_labels_severity)){
@@ -266,7 +266,7 @@ fviz_nbclust(t(expression_matrix_norm_scale_fix_out[which(rownames(expression_ma
 
 
 
-# K-means clustering con K = 4 y 20 asignaciones aleatorias de clústeres iniciales 
+# K-means clustering con K = 4 y 20 asignaciones aleatorias de clÃºsteres iniciales 
 k.means <- kmeans(x = t(expression_matrix_norm_scale_fix_out[which(rownames(expression_matrix_norm_scale_fix_out) %in% names(gene_mrmr_scale)[1:7]),]), centers = 4, nstart = 25)
 fviz_cluster(k.means, data = t(expression_matrix_norm_scale_fix_out[which(rownames(expression_matrix_norm_scale_fix_out) %in% names(gene_mrmr_scale)[1:7]),]),
              palette = c("#2E9FDF", "#00AFBB", "#E7B800",'red'), 
