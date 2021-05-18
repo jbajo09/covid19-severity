@@ -255,72 +255,10 @@ legend("bottom", legendLabels, lty=1, ncol= 1,inset = c(0,0),  col = colours, ce
 
 
 
-#CLUSTERING K-MEANS
-set.seed(50)
-# los 7 primeros genes del ranking
-fviz_nbclust(t(expression_matrix_norm_scale_fix_out[which(rownames(expression_matrix_norm_scale_fix_out) %in% names(gene_mrmr_scale)[1:7]),]), kmeans, method = "wss")
-#todos los DEGS
-fviz_nbclust(t(expression_matrix_norm_scale_fix_out[which(rownames(expression_matrix_norm_scale_fix_out) %in% names(gene_mrmr_scale)),]), kmeans, method = "wss")
-# los 4 primeros
-fviz_nbclust(t(expression_matrix_norm_scale_fix_out[which(rownames(expression_matrix_norm_scale_fix_out) %in% names(gene_mrmr_scale)[1:4]),]), kmeans, method = "wss")
-
-
-
-# K-means clustering con K = 4 y 20 asignaciones aleatorias de clústeres iniciales 
-k.means <- kmeans(x = t(expression_matrix_norm_scale_fix_out[which(rownames(expression_matrix_norm_scale_fix_out) %in% names(gene_mrmr_scale)[1:7]),]), centers = 4, nstart = 25)
-fviz_cluster(k.means, data = t(expression_matrix_norm_scale_fix_out[which(rownames(expression_matrix_norm_scale_fix_out) %in% names(gene_mrmr_scale)[1:7]),]),
-             palette = c("#2E9FDF", "#00AFBB", "#E7B800",'red'), 
-             geom = "point",
-             ellipse.type = "euclid", 
-             ggtheme = theme_bw()
-)
-
-# Dimension reduction using PCA
-pca <- prcomp(t(expression_matrix_norm_scale_fix_out[which(rownames(expression_matrix_norm_scale_fix_out) %in% names(gene_mrmr_scale)[1:7]),]),  scale =TRUE)
-# Coordinates of individuals
-ind.coord <- as.data.frame(get_pca_ind(pca)$coord)
-# Add clusters obtained using the K-means algorithm
-ind.coord$cluster <- factor(k.means$cluster)
-# Add Species groups from the original data sett
-ind.coord$label <- labels_scale
-# Data inspection
-head(ind.coord)
-# Percentage of variance explained by dimensions
-eigenvalue <- round(get_eigenvalue(pca), 1)
-variance.percent <- eigenvalue$variance.percent
-head(eigenvalue)
-ggscatter(
-  ind.coord, x = "Dim.1", y = "Dim.2", 
-  color = "cluster", palette = c("#2E9FDF", "#00AFBB", "#E7B800",'red'), ellipse = TRUE, ellipse.type = "euclid", shape = 'label',
-  size = 2,  legend = "right", ggtheme = theme_light(),
-  xlab = paste0("Dim 1 (", variance.percent[1], "% )" ),
-  ylab = paste0("Dim 2 (", variance.percent[2], "% )" )
-) + stat_mean(aes(color = cluster), size = 4) + coord_fixed(ratio = 1)
-
-
-
-#heatmap
-library("gplots")
-library("heatmap.plus")
-library("RColorBrewer")
-
-
-condition_colors <- unlist(lapply(labels_scale,function(x){
-  if(grepl("ICU",x)) 'blue' #pink
-  else if (grepl('Control',x)) 'red' #grey
-  else if (grepl('Inpatient',x)) 'green'
-  else if (grepl('Outpatient',x)) 'black'
-}))
-
-# I like to have a line just to assign input in one step
-input <- as.matrix(expression_matrix_norm_scale_fix_out[which(rownames(expression_matrix_norm_scale_fix_out) %in% names(gene_mrmr_scale)),])
-par(oma = c(5, 1, 0, 1))
-heatmap.2(input, trace="none", density="none", col=bluered(20), cexRow=1, cexCol=0.2,
-          ColSideColors=condition_colors, scale="row",
-          hclust=function(x) hclust(x))
-par(fig = c(0, 1, 0, 1), oma = c(27.9, 35.5, 0, 0), mar = c(0, 0, 0, 0), new = TRUE)
-plot(0, 0, type = "n", bty = "n", xaxt = "n", yaxt = "n")
-labelegend <- c('ICU','Control','Inpatient','Outpatient')
-legend("bottom", labelegend, ncol= 1,inset = .02, fill = c('blue','red','green','black'), cex = 1.1)
+#T-SNE
+library(M3C)
+tsne(expression_matrix[which(rownames(expression_matrix)%in%names(gene_mrmr_scale)[1:4]),],labels=as.factor(labels),controlscale=TRUE, scale=3, colvec = c('red','blue','green','black'))
+tsne(expression_matrix_norm_scale[which(rownames(expression_matrix_norm_scale)%in%names(gene_mrmr_scale)[1:4]),],labels=as.factor(labels),controlscale=TRUE, scale=3, colvec = c('red','blue','green','black'))
+tsne(expression_matrix_norm_scale_fix_out[which(rownames(expression_matrix_norm_scale_fix_out)%in%names(gene_mrmr_scale)[1:4]),],labels=as.factor(labels_scale),controlscale=TRUE, scale=3, colvec = c('red','blue','green','black'))
 
 
