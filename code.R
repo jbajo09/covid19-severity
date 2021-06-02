@@ -196,14 +196,15 @@ legend(x=11.9 ,y =0.9137, c('Accuracy', 'Sensitivity','Specificity','F1-Score'),
 
 
 #LOOCV
+require(class)
 LOOCV <- knn.cv(t(expression_matrix_norm_scale_fix_out[which(rownames(expression_matrix_norm_scale_fix_out) %in% names(gene_mrmr_scale)[1:4]),]), cl = labels_scale, k=7, use.all = TRUE)
 confusionMatrix(data = LOOCV, reference = as.factor(labels_scale))
 dataPlot(confusionMatrix(data = LOOCV, reference = as.factor(labels_scale))$table, labels = labels_scale  ,mode = "confusionMatrix",toPNG = FALSE, toPDF = FALSE)
 
 
 
-# AUC 
-response <- as.factor(test_labels_scale)
+# OVA knn LOOCV AUC
+response <- as.factor(labels_scale)
 aucs <- rep(NA, length(levels(response))) # store AUCs
 legendLabels <- as.character()
 colours <- c('red','blue','green','black')
@@ -218,14 +219,9 @@ plot(x=NA, y=NA, xlim=c(0,1), ylim=c(0,1),
 
 for (i in seq_along(levels(response))) {
   cur.class <- levels(response)[i]
-  binaryTraining.labels <- as.factor(train_labels_scale == cur.class)
-  binaryTest.labels <- as.factor(test_labels_scale == cur.class)
-  
-  binary_knn_cv_mrmr_results <- knn_trn(t(train_matrix_scale), binaryTraining.labels, names(gene_mrmr_scale)[1:4])
-  
-  binary_knn_test_mrmr_results <- knn_test(t(train_matrix_scale), binaryTraining.labels, t(test_matrix_scale), binaryTest.labels, names(gene_mrmr_scale)[1:4], bestK = binary_knn_cv_mrmr_results$bestK)
-  
-  score <- binary_knn_test_mrmr_results$predictions[[4]]
+  binaryTest.labels <- as.factor(labels_scale == cur.class)
+  binary_LOOCV <- knn.cv(t(expression_matrix_norm_scale_fix_out[which(rownames(expression_matrix_norm_scale_fix_out) %in% names(gene_mrmr_scale)[1:4]),]), cl = binaryTest.labels, k=7)
+  score <- binary_LOOCV
   score <- as.vector(score)
   score[score=='FALSE'] <- 0
   score[score=='TRUE'] <- 1
@@ -247,16 +243,12 @@ for (i in seq_along(levels(response))) {
 print(paste0("Mean AUC under the precision-recall curve is: ", round(mean(aucs), 2)))
 
 lines(x=c(0,1), c(0,1))
-legend(x=0.3951 ,y =0.305, legendLabels, lty=1, ncol= 1,inset = c(0,0),  col = colours, cex = 1.3,lwd=3)
-
-par(fig = c(0, 1, 0, 1), oma = c(0.6, 0, 0, 0), mar = c(0, 0, 0, 0), new = TRUE)
-plot(0, 0, type = "n", bty = "n", xaxt = "n", yaxt = "n")
-legend("bottom", legendLabels, lty=1, ncol= 1,inset = c(0,0),  col = colours, cex = 1.1,lwd=3)
+legend(x=0.61 ,y =0.305, legendLabels[c(1,4,3,2)], lty=1, ncol= 1,inset = c(0,0),  col = colours, cex = 1.3,lwd=3)
 
 
 
 #T-SNE
-library(M3C)
+require(M3C)
 tsne(expression_matrix[which(rownames(expression_matrix)%in%names(gene_mrmr_scale)[1:4]),],labels=as.factor(labels),controlscale=TRUE, scale=3, colvec = c('red','blue','green','black'))
 tsne(expression_matrix_norm_scale[which(rownames(expression_matrix_norm_scale)%in%names(gene_mrmr_scale)[1:4]),],labels=as.factor(labels),controlscale=TRUE, scale=3, colvec = c('red','blue','green','black'))
 tsne(expression_matrix_norm_scale_fix_out[which(rownames(expression_matrix_norm_scale_fix_out)%in%names(gene_mrmr_scale)[1:4]),],labels=as.factor(labels_scale),controlscale=TRUE, scale=3, colvec = c('red','blue','green','black'))
